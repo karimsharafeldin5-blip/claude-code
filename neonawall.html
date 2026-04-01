@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>NEONAWALL | Quantum LED Illuminations</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,800&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+    :root {
+        --bg: #0a0a0f;
+        --text: #eef5ff;
+        --accent: #00ffff;
+        --accent2: #ff00c6;
+        --panel: rgba(2, 7, 16, 0.85);
+        --card: rgba(10, 20, 30, 0.7);
+    }
+    [data-theme="light"] {
+        --bg: #f2f7ff;
+        --text: #091325;
+        --panel: rgba(255, 255, 255, 0.9);
+        --card: rgba(255, 255, 255, 0.85);
+        --accent: #0066f9;
+        --accent2: #a100ff;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+        min-height:100vh;
+        background: radial-gradient(circle at 15% 20%,rgba(0,255,255,.1), transparent 45%), var(--bg);
+        color: var(--text);
+        font-family: 'Inter', sans-serif;
+        overflow-x:hidden;
+        scroll-behavior: smooth;
+        transition: background .4s, color .4s;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        * { scroll-behavior: auto !important; animation: none !important; transition:none !important; }
+    }
+    .bg-grid {
+        position:fixed; inset:0; background-image: linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg,rgba(0,255,255,0.03) 1px,transparent 1px); background-size:40px 40px;
+        pointer-events:none;
+        z-index:0;
+        opacity:.52;
+    }
+    .container { max-width:1440px; margin:0 auto; padding:1rem 2rem 2.5rem; position:relative; z-index:2; }
+    .header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; padding:.9rem 0; border-bottom:1px solid rgba(0,255,255,.2); backdrop-filter: blur(10px); }
+    .logo { font-family: 'Orbitron', monospace; font-size:1.95rem; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:1.2px; }
+    .nav-links { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+    .nav-links a { color: var(--text); text-decoration:none; font-weight:500; transition:.2s; }
+    .nav-links a:hover, .nav-links a:focus { color: var(--accent); outline: none; text-shadow:0 0 8px cyan; }
+    .btn-glow { border:1px solid var(--accent); background: rgba(0,255,255,.12); color:var(--accent); border-radius:999px; padding:.56rem 1.1rem; font-weight:700; cursor:pointer; transition:.2s; }
+    .btn-glow:hover, .btn-glow:focus { background: var(--accent); color:#000; box-shadow:0 0 15px var(--accent); outline: none; }
+    .deal-banner { background: linear-gradient(90deg,#ff0066,#9900ff); margin:1.2rem 0; padding:.8rem; text-align:center; border-radius:999px; font-weight:700; letter-spacing:.7px; animation:pulse 2.2s infinite; }
+    @keyframes pulse { 0% { box-shadow:0 0 0 0 rgba(255,0,102,.35);} 100% { box-shadow:0 0 0 14px rgba(255,0,102,0);} }
+    .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:1.2rem; margin:2.1rem 0; }
+    .product-card { background:var(--card); border:1px solid rgba(0,255,255,.25); border-radius:24px; padding:1.15rem; backdrop-filter: blur(16px); transition: transform .2s, box-shadow .2s, border-color .2s; }
+    .product-card:hover,.product-card:focus-within { transform:translateY(-6px); border-color:var(--accent); box-shadow:0 20px 28px -8px rgba(0,255,255,.26); }
+    .product-img { min-height:180px; border-radius:18px; background:linear-gradient(145deg,#1f2a3a,#0a0f1a); display:flex; align-items:center; justify-content:center; font-size:3.6rem; }
+    .product-title { font-family:'Orbitron'; margin:.8rem 0 .28rem; font-size:1.2rem; }
+    .price { font-weight:800; font-size:1.45rem; color:var(--accent); }
+    .old-price { text-decoration:line-through; color:#9aa6bc; margin-left:.5rem; font-size:.88rem; }
+    .user-panel { position:fixed; top:18px; right:18px; z-index:100; background:rgba(0,0,0,.65); border:1px solid var(--accent); backdrop-filter: blur(10px); border-radius:999px; display:flex; align-items:center; gap:.5rem; padding:.5rem 1rem; }
+    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); backdrop-filter: blur(8px); align-items:center; justify-content:center; z-index:1000; }
+    .modal.open { display:flex; }
+    .modal-content { width:min(92%,450px); background:linear-gradient(145deg,#11161f,#121a28); border-radius:26px; border:1px solid cyan; box-shadow:0 0 48px rgba(0,255,255,.25); padding:1.5rem; }
+    .close-modal { float:right; font-size:28px; line-height:1; cursor:pointer; margin-top:-.5rem; }
+    .footer { margin:3rem 0 0; text-align:center; padding:1.8rem 0; border-top:1px solid rgba(0,255,255,.2); }
+    .toast { position:fixed; left:50%; transform:translateX(-50%); bottom:20px; background:rgba(10,25,35,.95); border:1px solid var(--accent); color:#eef5ff; border-radius:999px; padding:.55rem 1rem; z-index:1100; box-shadow:0 2px 8px rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:transform .2s, opacity .2s; }
+    .toast.show { opacity:1; transform:translate(-50%, -10px); pointer-events:auto; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+
+<section class="user-panel" aria-live="polite" id="userPanel">
+    <span id="userGreeting">🌐 Guest</span>
+    <button class="btn-glow" id="authBtn" aria-haspopup="dialog">Sign In</button>
+</section>
+
+<main class="container">
+    <header class="header">
+        <div class="logo" aria-label="NEONAWALL brand">⚡ NEONAWALL // HYPERION</div>
+        <nav class="nav-links" aria-label="Main navigation">
+            <a href="#shop">SHOP</a>
+            <a href="#custom">CUSTOM</a>
+            <a href="#dashboard" id="dashboardLink">MY DASHBOARD</a>
+            <a href="#metaverse">∞ METAVERSE</a>
+        </nav>
+        <button class="btn-glow" id="themeToggle" aria-live="polite">🌙 Dark Mode</button>
+    </header>
+
+    <div class="deal-banner" id="countdownBanner" role="status">
+        🔥 FLASH SALE: 25% OFF ALL LED SIGNS + FREE SHIPPING — ENDS IN <span id="timer">24:00:00</span> 🔥
+    </div>
+
+    <section id="leadCapture" style="background: rgba(0,255,255,0.05); border-radius: 40px; padding: 1.5rem; margin-bottom: 1.8rem;">
+        <h3>📡 NEURAL LINK OFFER</h3>
+        <p>Subscribe with email or phone to unlock 10% code + early access to quantum drops</p>
+        <form id="captureForm" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;" novalidate>
+            <input id="captureEmail" type="email" aria-label="Email" placeholder="you@email.com" style="width:250px;">
+            <input id="capturePhone" type="tel" aria-label="Phone" placeholder="+1234567890" style="width:200px;">
+            <button type="submit" class="btn-glow">ACTIVATE OFFER</button>
+        </form>
+        <p id="captureMsg" style="font-size:.8rem; margin-top:.6rem;" role="alert"></p>
+    </section>
+
+    <h2 id="shop" style="font-family: 'Orbitron'; margin-bottom:.8rem;">⚡ LED ILLUMINATE SIGNS — NEON QUANTUM COLLECTION</h2>
+    <div class="products-grid" id="productsGrid" role="list"></div>
+
+    <section id="checkoutModal" class="modal" aria-hidden="true" aria-label="Checkout dialog" role="dialog">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal" aria-label="Close checkout">&times;</button>
+            <h2>⚡ CHECKOUT MATRIX</h2>
+            <div id="checkoutDetails"></div>
+            <button id="stripePayBtn" class="btn-glow" style="width:100%; margin-top: 0.95rem;">💳 PAY WITH STRIPE</button>
+        </div>
+    </section>
+
+    <section id="authModal" class="modal" aria-hidden="true" aria-label="Authentication dialog" role="dialog">
+        <div class="modal-content">
+            <button class="close-modal" id="closeAuthModal" aria-label="Close auth">&times;</button>
+            <h2>🔐 HYPERION ACCESS</h2>
+            <form id="authForm" novalidate>
+                <label class="sr-only" for="loginEmail">Email</label>
+                <input id="loginEmail" type="email" placeholder="Email" required>
+                <label class="sr-only" for="loginPassword">Password</label>
+                <input id="loginPassword" type="password" placeholder="Password" required minlength="6">
+                <button type="submit" class="btn-glow">SIGN UP / LOGIN</button>
+            </form>
+            <div style="text-align:center; margin: .75rem 0;">OR</div>
+            <button id="googleSignInBtn" class="google-btn" type="button">🌐 SIGN IN WITH GOOGLE</button>
+            <p id="authMessage" style="font-size:12px; margin-top:12px;" role="status"></p>
+        </div>
+    </section>
+
+</main>
+
+<footer class="footer">
+    <p>© 2026 NEONAWALL — FUTURISTIC CRAFT. ALL BEACONS ACTIVE. | SECURED BY STRIPE & QUANTUM AUTH</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(async () => {
+    const DB_NAME = "NeonawallDB";
+    const STORE_NAME = "users";
+    let currentUser = null;
+    let selectedProduct = null;
+    const products = [
+        { id: "neon1", name: "HYPERION WINGS", price: 129, img: "🪽", desc: "LED neon wing sculpture, 24in" },
+        { id: "neon2", name: "CYBER GLYPH", price: 99, img: "🌀", desc: "Customizable rune text" },
+        { id: "neon3", name: "INFINITY MIRROR", price: 189, img: "♾️", desc: "Infinite depth neon tunnel" },
+        { id: "neon4", name: "ANIME EYE", price: 79, img: "👁️", desc: "Glowing manga style" },
+        { id: "neon5", name: "ABSTRACT BLAZE", price: 149, img: "🔥", desc: "Flaming neon art" },
+        { id: "neon6", name: "NEON HEARTBEAT", price: 89, img: "❤️‍🔥", desc: "Pulsing LED heart" }
+    ];
+
+    const $ = id => document.getElementById(id);
+    const showToast = (text, type="info") => {
+        const toast = $("toast");
+        toast.textContent = text;
+        toast.classList.add("show");
+        toast.style.borderColor = type === "error" ? "#ff3f6f" : "#0ff";
+        clearTimeout(toast._hide);
+        toast._hide = setTimeout(() => toast.classList.remove("show"), 3200);
+    };
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 1);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result);
+            request.onupgradeneeded = e => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME, { keyPath: "email" });
+                }
+            };
+        });
+    }
+
+    async function getStore(mode="readonly") {
+        const db = await openDB();
+        return db.transaction(STORE_NAME, mode).objectStore(STORE_NAME);
+    }
+
+    async function saveUser(user) {
+        const store = await getStore("readwrite");
+        return new Promise((resolve,reject)=> {
+            const req = store.put(user);
+            req.onsuccess = () => resolve(user);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    async function getUser(email) {
+        if (!email) return null;
+        const store = await getStore();
+        return new Promise((resolve) => {
+            const req = store.get(email);
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => resolve(null);
+        });
+    }
+
+    async function hashPassword(password) {
+        const enc = new TextEncoder().encode(password);
+        const digest = await crypto.subtle.digest("SHA-256", enc);
+        return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    const authBtn = $("authBtn");
+    const dashboardLink = $("dashboardLink");
+    const themeToggle = $("themeToggle");
+
+    function updateUIAfterAuth() {
+        const greeting = currentUser ? `👤 ${currentUser.name || currentUser.email}` : "🌐 Guest";
+        $("userGreeting").textContent = greeting;
+        if (currentUser) {
+            authBtn.textContent = "Sign Out";
+            authBtn.onclick = () => {
+                currentUser = null;
+                localStorage.removeItem("neonawall_user");
+                updateUIAfterAuth();
+                showToast("Signed out");
+            };
+        } else {
+            authBtn.textContent = "Sign In";
+            authBtn.onclick = () => openModal("authModal");
+        }
+    }
+
+    function persistSession() { localStorage.setItem("neonawall_user", JSON.stringify(currentUser || {})); }
+    function restoreSession() {
+        try { const raw = localStorage.getItem("neonawall_user");
+            if (raw) { const parsed = JSON.parse(raw); if (parsed?.email) currentUser = parsed; }
+        } catch (e) { currentUser = null; }
+    }
+
+    function openModal(id) { const m = $(id); if (!m) return; m.classList.add("open"); m.setAttribute("aria-hidden","false"); }
+    function closeModal(id) { const m = $(id); if (!m) return; m.classList.remove("open"); m.setAttribute("aria-hidden","true"); }
+    function closeAll() { closeModal("authModal"); closeModal("checkoutModal"); }
+
+    const modalClose = [...document.querySelectorAll(".close-modal")];
+    modalClose.forEach(btn => btn.addEventListener("click", () => closeAll()));
+    window.addEventListener("click", e => {
+        if (e.target.classList.contains("modal")) closeAll();
+    });
+
+    async function handleEmailAuth(email, password) {
+        if (!email || !password) {
+            showToast("Email and password are required", "error");
+            return;
+        }
+        const hashed = await hashPassword(password);
+        const existing = await getUser(email);
+
+        if (existing) {
+            if (existing.password === hashed) {
+                currentUser = { email, name: existing.name || email.split('@')[0], createdAt: existing.createdAt };
+                showToast("Welcome back, " + currentUser.name);
+            } else {
+                showToast("Invalid password", "error");
+                return;
+            }
+        } else {
+            const user = { email, password: hashed, name: email.split('@')[0], createdAt: new Date().toISOString() };
+            await saveUser(user);
+            currentUser = { email, name: user.name, createdAt: user.createdAt };
+            showToast("Account created & logged in!");
+        }
+        persistSession();
+        updateUIAfterAuth();
+        closeAll();
+    }
+
+    function googleSignInFlow() {
+        showToast("Simulated Google sign-in enabled (demo)", "info");
+        const demo = { email: "google_demo@neonawall.com", name: "Google User", createdAt: new Date().toISOString() };
+        saveUser(demo).catch(() => {});
+        currentUser = demo;
+        persistSession();
+        updateUIAfterAuth();
+        closeAll();
+    }
+
+    function renderProducts() {
+        const grid = $("productsGrid");
+        grid.innerHTML = products.map(p => `
+            <article class="product-card" role="listitem" tabindex="0">
+                <div class="product-img" aria-hidden="true">${p.img}</div>
+                <h3 class="product-title">${p.name}</h3>
+                <div>
+                    <span class="price">$${p.price}</span><span class="old-price">$${Math.round(p.price*1.3)}</span>
+                </div>
+                <p style="font-size:.82rem; margin:.5rem 0;">${p.desc}</p>
+                <button class="btn-glow buy-btn" data-id="${p.id}" type="button">PURCHASE →</button>
+            </article>
+        `).join("");
+        grid.querySelectorAll(".buy-btn").forEach(btn => btn.addEventListener("click", startCheckout));
+    }
+
+    const getCart = () => JSON.parse(localStorage.getItem("neonawall_cart") || "[]");
+    const setCart = cart => localStorage.setItem("neonawall_cart", JSON.stringify(cart));
+    function addItemToCart(product) {
+        const cart = getCart();
+        cart.push(product);
+        setCart(cart);
+        showToast(`${product.name} added to cart`);
+    }
+
+    function startCheckout(e) {
+        const id = e.currentTarget.dataset.id;
+        const product = products.find(i => i.id === id);
+        if (!product) { showToast("Product not found", "error"); return; }
+        selectedProduct = product;
+        $("checkoutDetails").innerHTML = `
+            <p><strong>${product.name}</strong> — $${product.price}</p>
+            <p>⚡ Limited Hyper Edition</p>
+            <p style="font-size:.88rem;margin:.4rem 0;">Current user: ${currentUser?.email ?? "Guest"}</p>
+        `;
+        openModal("checkoutModal");
+    }
+
+    function stripePaySimulation() {
+        if (!selectedProduct) { showToast("Select an item first", "error"); return; }
+        const order = { id: crypto.randomUUID(), item: selectedProduct.name, amount: selectedProduct.price, createdAt: new Date().toISOString(), user: currentUser?.email ?? "guest" };
+        const history = JSON.parse(localStorage.getItem("neonawall_orders") || "[]");
+        history.push(order);
+        localStorage.setItem("neonawall_orders", JSON.stringify(history));
+        addItemToCart(selectedProduct);
+        showToast(`PAYMENT SUCCESS: ${selectedProduct.name} $${selectedProduct.price}`);
+        closeModal("checkoutModal");
+        if (currentUser) showToast(`Order receipt delivered to ${currentUser.email}`);
+    }
+
+    function startCountdown() {
+        const endTime = Date.now() + (24 * 3600 * 1000);
+        const timerElem = $("timer");
+        const update = () => {
+            const ms = Math.max(0, endTime - Date.now());
+            const h = String(Math.floor(ms / 3600000)).padStart(2, "0");
+            const m = String(Math.floor((ms % 3600000) / 60000)).padStart(2, "0");
+            const s = String(Math.floor((ms % 60000) / 1000)).padStart(2, "0");
+            timerElem.textContent = `${h}:${m}:${s}`;
+            if (ms <= 0) {
+                timerElem.textContent = "00:00:00 — DEAL EXPIRED";
+                return;
+            }
+            requestAnimationFrame(update);
+        };
+        update();
+    }
+
+    const captureForm = $("captureForm");
+    captureForm.addEventListener("submit", e => {
+        e.preventDefault();
+        const email = $("captureEmail").value.trim();
+        const phone = $("capturePhone").value.trim();
+        if (!email && !phone) { showToast("Enter email or phone.", "error"); $("captureMsg").textContent = "⚡ Enter at least email or phone."; return; }
+        localStorage.setItem("leadEmail", email);
+        localStorage.setItem("leadPhone", phone);
+        $("captureMsg").textContent = "✅ OFFER ACTIVATED! 10% CODE: NEONVIP2025";
+        showToast("Lead saved: " + (email || phone));
+    });
+
+    dashboardLink.addEventListener("click", e => {
+        e.preventDefault();
+        if (!currentUser) return showToast("Sign in to access your dashboard", "error");
+        const orders = JSON.parse(localStorage.getItem("neonawall_orders") || "[]").filter(o => o.user === currentUser.email);
+        alert(`📊 Dashboard\nUser: ${currentUser.email}\nOrders: ${orders.length}\n` + orders.map(o => `${o.item} $${o.amount} (${new Date(o.createdAt).toLocaleString()})`).join("\n"));
+    });
+
+    $("authForm").addEventListener("submit", e => {
+        e.preventDefault();
+        handleEmailAuth($("loginEmail").value.trim(), $("loginPassword").value.trim());
+    });
+
+    $("googleSignInBtn").addEventListener("click", googleSignInFlow);
+    $("stripePayBtn").addEventListener("click", stripePaySimulation);
+    $("themeToggle").addEventListener("click", () => {
+        const html = document.documentElement;
+        const next = html.getAttribute("data-theme") === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", next);
+        themeToggle.textContent = next === "light" ? "🌙 Dark Mode" : "☀️ Light Mode";
+    });
+
+    window.addEventListener("beforeunload", persistSession);
+    restoreSession();
+    updateUIAfterAuth();
+    renderProducts();
+    startCountdown();
+    openDB().catch(e => console.warn("IndexedDB unavailable", e));
+})();
+</script>
+</body>
+</html>
