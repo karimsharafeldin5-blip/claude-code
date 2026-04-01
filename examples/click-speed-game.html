@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Click Speed Game</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; text-align: center; margin: 0; padding: 0; background: #121212; color: #f4f4f4; }
+    .container { max-width: 480px; margin: 40px auto; background: #1f1f1f; border-radius: 12px; padding: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+    h1 { margin-bottom: 12px; }
+    button { font-size: 1rem; padding: 12px 18px; border-radius: 8px; border: 0; background: #5a9eff; color: #fff; cursor: pointer; }
+    button:hover { background: #3991ff; }
+    #target { margin-top: 24px; width: 130px; height: 130px; border-radius: 50%; background: #ff6b6b; display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; cursor: pointer; user-select: none; }
+    #scoreboard { margin-top: 18px; }
+    .line { margin: 6px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Click Speed Game</h1>
+    <p>Click the red circle as fast as you can before time runs out.</p>
+
+    <div id="scoreboard">
+      <div class="line">Time: <span id="time">10</span>s</div>
+      <div class="line">Score: <span id="score">0</span></div>
+      <div class="line">Best: <span id="best">0</span></div>
+    </div>
+
+    <button id="startBtn">Start Game</button>
+    <div id="target" style="display: none;">Click</div>
+    <p id="message" style="margin-top: 14px; color: #9cd0ff;"></p>
+  </div>
+
+  <script>
+    const timeEl = document.getElementById('time');
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+    const messageEl = document.getElementById('message');
+    const target = document.getElementById('target');
+    const startBtn = document.getElementById('startBtn');
+
+    let timeLeft = 10;
+    let score = 0;
+    let best = 0;
+    let timer = null;
+
+    function setTargetPosition() {
+      const padding = 28;
+      const viewW = document.documentElement.clientWidth;
+      const viewH = window.innerHeight;
+      const x = Math.random() * (viewW - 2 * padding - target.offsetWidth) + padding;
+      const y = Math.random() * (viewH - 2 * padding - target.offsetHeight - 150) + padding + 120;
+      target.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    function finishGame() {
+      clearInterval(timer);
+      target.style.display = 'none';
+      startBtn.innerText = 'Restart';
+      messageEl.innerText = `Game over! Final score: ${score}`;
+      if (score > best) {
+        best = score;
+        bestEl.innerText = best;
+        messageEl.innerText += ' (New best!)';
+      }
+    }
+
+    function startGame() {
+      timeLeft = 10;
+      score = 0;
+      timeEl.innerText = timeLeft;
+      scoreEl.innerText = score;
+      messageEl.innerText = '';
+      target.style.display = 'inline-flex';
+      startBtn.innerText = 'Playing...';
+      startBtn.disabled = true;
+
+      setTargetPosition();
+
+      timer = setInterval(() => {
+        timeLeft -= 1;
+        timeEl.innerText = timeLeft;
+
+        if (timeLeft <= 0) {
+          finishGame();
+          startBtn.disabled = false;
+        }
+      }, 1000);
+    }
+
+    target.addEventListener('click', () => {
+      if (timeLeft <= 0) return;
+      score += 1;
+      scoreEl.innerText = score;
+      setTargetPosition();
+    });
+
+    startBtn.addEventListener('click', startGame);
+  </script>
+</body>
+</html>
